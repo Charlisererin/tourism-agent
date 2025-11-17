@@ -1,0 +1,154 @@
+{% extends 'home.html' %}
+{% block css %}
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #r-result {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #r-result p {
+            margin: 0 0 10px;
+        }
+
+        #allmap {
+            height: 400px;
+            width: 100%;
+        }
+
+        #r-result, #r-result table {
+            width: 100%;
+        }
+
+        #r-result {
+            border: 1px solid black;
+        }
+
+        #r-result span {
+            border: 1px solid black;
+        }
+
+        .shiny-button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .shiny-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div id="r-result">
+        <p>根据您的打分，为您生成的推荐景点如下（如无打分按照热度推荐）：</p>
+        <h3>
+            {% for item in spot_name %}
+                {{ item }}{% if not loop.last %} - {% endif %}
+            {% endfor %}
+        </h3>
+    </div>
+    <p></p>
+    <p></p>
+    <div id="driving_way" style="display: inline-block; margin-right: 20px;">
+        方式
+        <select id="driving-way-select">
+            <option value="0">最少时间</option>
+            <option value="1">最短距离</option>
+            <option value="2">避开高速</option>
+        </select>
+    </div>
+    <div id="driving_begin" style="display: inline-block; margin-right: 20px;">
+        起点
+        <select id="driving-begin-select">
+            {% for item in spot_name %}
+                <option value="{{ item }}">{{ item }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div id="driving_end" style="display: inline-block;">
+        终点
+        <select id="driving-end-select">
+            {% for item in spot_name %}
+                <option value="{{ item }}">{{ item }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <input type="button" id="result" class="shiny-button" value="获取路线"/>
+    <p></p>
+    <p></p>
+    <div id="allmap"></div>
+
+    {% load static %}
+    <script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=28bN8ctsymXtl82NjW3jFsPhXBtAkUVC"></script>
+    <script type="text/javascript">
+        // 百度地图API功能
+        var map = new BMap.Map("allmap");
+        map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+        map.centerAndZoom(new BMap.Point(116.404, 39.915), 11);
+
+        // 三种驾车策略：最少时间，最短距离，避开高速
+        var routePolicy = [
+            BMAP_DRIVING_POLICY_LEAST_TIME,
+            BMAP_DRIVING_POLICY_LEAST_DISTANCE,
+            BMAP_DRIVING_POLICY_AVOID_HIGHWAYS
+        ];
+
+        // 景点列表从Django模板变量获取
+        var spotList = [
+            {% for item in spot_name %}
+                "{{ item }}"{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // 点击获取路线按钮
+        $("#result").click(function () {
+            map.clearOverlays();
+            var policyIndex = $("#driving-way-select").val();
+            var start = $("#driving-begin-select").val();
+            var end = $("#driving-end-select").val();
+            searchRoute(start, end, routePolicy[policyIndex]);
+        });
+
+        // 根据起始点显示路线
+        function searchRoute(start, end, policy) {
+            var driving = new BMap.DrivingRoute(map, {
+                renderOptions: {map: map, autoViewport: true},
+                policy: policy
+            });
+
+            driving.search(start, end);
+
+            // 更改图标
+            var startIcon = new BMap.Icon("{% static 'img/other/begin.png' %}", new BMap.Size(50, 50));
+            var endIcon = new BMap.Icon("{% static 'img/other/spot.png' %}", new BMap.Size(50, 50));
+
+            driving.setMarkersSetCallback(function (result) {
+                if (result && result.length >= 2) {
+                    result[0].marker.setIcon(startIcon);
+                    result[1].marker.setIcon(endIcon);
+                }
+            });
+        }
+
+        // 页面加载完成后默认显示第一条路线
+        $(document).ready(function () {
+            if (spotList.length >= 2) {
+                $("#driving-begin-select").val(spotList[0]);
+                $("#driving-end-select").val(spotList[1]);
+                $("#result").click();
+            }
+        });
+    </script>
+{% endblock %}

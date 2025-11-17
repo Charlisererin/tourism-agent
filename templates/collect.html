@@ -1,0 +1,53 @@
+{% extends 'home.html' %}
+
+{% block css %}
+    <style>
+        .col-md-12, .col-md-9 {
+            padding-right: 3px;
+            padding-left: 3px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'menu.html' %}
+    <div class="col-md-9">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h3 class="panel-title"><span class="glyphicon glyphicon-map-marker"></span>&nbsp;收藏的景点</h3>
+            </div>
+            <div class="panel-body">
+                <div class="col-md-12">
+                    {% for v in page_data %}
+                        <div class="media">
+                            <div class="media-left">
+                                <a href="{% url 'play' v.id %}">
+                                    <img class="media-object" src="{{ v.img_url }}" alt="{{ v.title }}"
+                                         style="width: 100px;height: 100px;">
+                                </a>
+                            </div>
+                            <div class="media-body">
+                                <h4 class="media-heading">{{ v.title }}<a
+                                        href="{% url 'play' v.id %}"
+                                        class="label label-primary pull-right">
+                                    <span class="glyphicon glyphicon-play"></span>查看</a></h4>
+                                <h5>{{ v.tag }}</h5>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-12 text-center" style="margin-top:6px;">
+                    {% include 'home_page.html' with page_data=page_data url_name='collect' %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $('#m-5').addClass('active');
+        });
+    </script>
+{% endblock %}

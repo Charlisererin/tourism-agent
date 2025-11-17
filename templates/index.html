@@ -1,0 +1,43 @@
+{% extends 'home.html' %}
+
+{% load static %}
+
+{% block content %}
+    <!--列表-->
+    <section id="movielist" style="margin-top:30px">
+        <div class="container">
+            <div class="row wow fadeIn" data-wow-delay="0.6s">
+                <div class="col-md-12 table-responsive">
+                    <table class="table text-left table-bordered" id="movietags">
+                    </table>
+                </div>
+
+                {% for v in page_data %}
+                    <div class="col-md-3">
+                        <div class="movielist text-center" style="background-color: #FFFFFF">
+                            <div class="text-left" style="margin-left:auto;margin-right:auto;width:210px;height:80px;">
+                                <br>
+                                <span style="color:#000000;font-weight: bolder; font-size: 18px;">{{ v.title }}</span>
+                            </div>
+                            <a href="{% url 'play' id=v.id %}" role="button">
+                                <img src="{{ v.img_url }}" style="width: 220px;height: 220px"
+                                     class="img-responsive center-block" alt="{{ v.title }}"
+                                     title="{{ v.title }}"></a>
+                            <div class="text-left" style="margin-left:auto;margin-right:auto;width:210px;height:80px;">
+                                <br>
+                                <span style="color:#727272; display: block; text-align: right; font-size: 16px;">{{ v.tag }}</span>
+                            </div>
+
+                            <a href="{% url 'play' id=v.id %}" class="btn btn-primary"
+                               role="button"><span class="glyphicon glyphicon-play"></span>&nbsp;查看</a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="col-md-12 text-center" style="margin-top:6px;">
+                    {% include 'home_page.html' with page_data=page_data url_name='index_page' %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

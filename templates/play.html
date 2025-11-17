@@ -1,0 +1,318 @@
+{% extends 'home.html' %}
+
+{% load static %}
+
+{% block css %}
+    <style>
+        #comment-list .media {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        #comment-list .media:last-child {
+            border-bottom: none;
+        }
+
+        #comment-list .media-heading small {
+            color: #999;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        #comment-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-5" style="width: 200px;height: 200px">
+            <br>
+            <br>
+            <h2 style="text-align: center"><b>{{ scenic.title }}</b></h2>
+            <br>
+            <br>
+            <img src="{{ scenic.img_url }}"
+                 style="width: 200px;height: 170px"
+                 class="img-responsive center-block" alt="{{ scenic.img_url }}" title="{{ scenic.img_url }}">
+        </div>
+        <div class="col-md-7" style="height:500px;width: 970px">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon"></span>&nbsp;景点详情</h3>
+                </div>
+                <div class="panel-body" style="height:459px;overflow: scroll;">
+                    <table class="table">
+                        <tr>
+                            <td style="width:100px;color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-search"></span>&nbsp;名称
+                            </td>
+                            <td>{{ scenic.title }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-home"></span>&nbsp;城市
+                            </td>
+                            <td>{{ scenic.country }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-tag"></span>&nbsp;位置
+                            </td>
+                            <td>{{ scenic.address }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-star"></span>&nbsp;评分
+                            </td>
+                            <td>
+                                <div>
+                                    {# 实心星星#}
+                                    {% for _ in full_stars %}
+                                        <span class="glyphicon glyphicon-star" style="color:#FFD119"></span>
+                                    {% endfor %}
+                                    {# 空心星星#}
+                                    {% for _ in empty_stars %}
+                                        <span class="glyphicon glyphicon-star-empty" style="color:#FFD119"></span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-time"></span>&nbsp;热度
+                            </td>
+                            <td>{{ scenic.hot }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-bell"></span>&nbsp;标签
+                            </td>
+                            <td>{{ scenic.tag }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-phone"></span>&nbsp;联系
+                            </td>
+                            <td>{{ scenic.tel }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#ccc;font-weight:bold;">
+                                <span class="glyphicon glyphicon-map-marker"></span>&nbsp;详情
+                            </td>
+                            <td>{{ scenic.detail }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12" style="margin-top:6px;">
+            <div class="panel panel-danger">
+                <div class="panel-body">
+                    {# 评论前需登录 #}
+                    {% if not request.user.is_authenticated %}
+                        <div class="alert alert-danger alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span aria-hidden="true">×</span>
+                                <span class="sr-only">Close</span>
+                            </button>
+                            <strong>请先<a href="{% url 'login' %}" target="_blank" class="text-info">登录</a>后，才可以查看往年分数并参与评分哟~亲！</strong>
+                        </div>
+                    {% endif %}
+
+                    {# 登陆后才显示提交评论,收藏景点 #}
+                    {% if request.user.is_authenticated %}
+                        <form role="form" style="margin-bottom:6px;" method="POST">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="input_star">{{ form.star.label }}</label>
+                                {{ form.star }}
+
+                                {% for err in form.star.errors %}
+                                    <div class="col-md-12">
+                                        <font style="color:red">{{ err }}</font>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-play"></span>&nbsp;提交评分
+                            </button>
+                            <a onclick="" class="btn btn-danger" id="btn-col"><span
+                                    class="glyphicon glyphicon-heart"></span>&nbsp;收藏景点</a>
+                            <a onclick="" class="btn btn-danger" id="btn-col-del"><span
+                                    class="glyphicon glyphicon-heart"></span>&nbsp;取消收藏</a>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12" style="margin-top:20px;">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-comment"></span>&nbsp;评论区</h3>
+                </div>
+                <div class="panel-body">
+                    {% if request.user.is_authenticated %}
+                        <form id="comment-form" class="form-horizontal">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <textarea class="form-control" id="comment-content" rows="3"
+                                              placeholder="请输入您的评论内容..." required></textarea>
+                                </div>
+                                <div class="col-sm-2">
+                                    <button type="submit" class="btn btn-primary btn-block">发表评论</button>
+                                </div>
+                            </div>
+                            <input type="hidden" id="scenic-id" value="{{ scenic.id }}">
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info">
+                            请先<a href="{% url 'login' %}" class="alert-link">登录</a>后发表评论
+                        </div>
+                    {% endif %}
+
+                    <div id="comment-list">
+                        {% for comment in comments %}
+                            <div class="media" style="margin-top:15px;">
+                                <div class="media-left">
+                                    {% if object.face %}
+                                        <img src="{{ object.face.url }}" alt="Face Image"
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="/media/user_faces/default_face.jpg" alt="Default Image"
+                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                    {% endif %}
+                                </div>
+                                <div class="media-body">
+                                    <h4 class="media-heading">
+                                        {{ comment.user.username }}
+                                        <small>{{ comment.add_time|date:"Y-m-d H:i" }}</small>
+                                        {% if comment.user == request.user %}
+                                            <button class="btn btn-xs btn-danger pull-right del-comment"
+                                                    data-id="{{ comment.id }}">删除
+                                            </button>
+                                        {% endif %}
+                                    </h4>
+                                    <p>{{ comment.content }}</p>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center text-muted" style="padding:20px;">
+                                暂无评论，快来发表第一条评论吧~
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $("#btn-col").click(function () {
+            var mid = {{ scenic.id }};
+            var uid = {{ request.user.id }};
+            $.ajax({
+                url: "{% url 'collect_add' %}",
+                type: "GET",
+                data: "mid=" + mid + "&uid=" + uid,
+                dataType: "json",
+                success: function (res) {
+                    if (res.ok === 1) {
+                        $("#show_col_msg").empty();
+                        $("#show_col_msg").append("收藏景点成功!");
+                        alert("收藏景点成功!");
+                    } else {
+                        $("#show_col_msg").empty();
+                        $("#show_col_msg").append("您已收藏此景点哦!");
+                        alert("您已收藏此景点哦!");
+                    }
+                }
+            })
+        });
+    </script>
+    <script>
+        $("#btn-col-del").click(function () {
+            var mid = {{ scenic.id }};
+            var uid = {{ request.user.id }};
+            $.ajax({
+                url: "{% url 'collect_del' %}",
+                type: "GET",
+                data: "mid=" + mid + "&uid=" + uid,
+                dataType: "json",
+                success: function (res) {
+                    if (res.ok === 1) {
+                        $("#show_col_msg").empty();
+                        $("#show_col_msg").append("您还未收藏此景点哦!");
+                        alert("您还未收藏此景点哦!");
+                    } else {
+                        $("#show_col_msg").empty();
+                        $("#show_col_msg").append("取消收藏成功!");
+                        alert("取消收藏成功!");
+                    }
+                }
+            })
+        });
+    </script>
+    <script>
+        // 提交评论
+        $('#comment-form').submit(function (e) {
+            e.preventDefault();
+            var content = $('#comment-content').val().trim();
+            if (!content) {
+                alert('评论内容不能为空');
+                return;
+            }
+
+            $.ajax({
+                url: "{% url 'comment_add' %}",
+                type: "POST",
+                data: {
+                    'scenic_id': $('#scenic-id').val(),
+                    'content': content,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                dataType: "json",
+                success: function (res) {
+                    if (res.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert(res.msg);
+                    }
+                },
+                error: function () {
+                    alert('评论失败，请稍后再试');
+                }
+            });
+        });
+
+        // 删除评论
+        $(document).on('click', '.del-comment', function () {
+            if (!confirm('确定要删除这条评论吗？')) return;
+
+            var comment_id = $(this).data('id');
+            $.ajax({
+                url: "{% url 'comment_del' %}",
+                type: "POST",
+                data: {
+                    'comment_id': comment_id,
+                    'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+                },
+                dataType: "json",
+                success: function (res) {
+                    if (res.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert(res.msg);
+                    }
+                },
+                error: function () {
+                    alert('删除失败，请稍后再试');
+                }
+            });
+        });
+    </script>
+{% endblock %}

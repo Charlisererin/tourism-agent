@@ -1,0 +1,77 @@
+{% if page_data %}
+    <ul class="pagination">
+        {# 首页 #}
+        <li><a href="{% url url_name page=1 %}">首页</a></li>
+
+        {# 上一页 #}
+        {% if page_data.has_previous %}
+            <li><a href="{% url url_name page=page_data.previous_page_number %}">上一页</a></li>
+        {% else %}
+            <li class="disabled"><a href="#">上一页</a></li>
+        {% endif %}
+
+        {# 页码 #}
+        {% with total_pages=page_data.paginator.num_pages current_page=page_data.number %}
+            {% if total_pages <= 7 %}
+                {# 如果总页数小于等于7，显示所有页码 #}
+                {% for v in page_data.paginator.page_range %}
+                    {% if v == current_page %}
+                        <li class="active"><a href="#">{{ v }}</a></li>
+                    {% else %}
+                        <li><a href="{% url url_name page=v %}">{{ v }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {# 如果总页数大于7，显示部分页码 #}
+                {% if current_page <= 4 %}
+                    {# 当前页在前4页 #}
+                    {% for v in page_data.paginator.page_range|slice:":5" %}
+                        {% if v == current_page %}
+                            <li class="active"><a href="#">{{ v }}</a></li>
+                        {% else %}
+                            <li><a href="{% url url_name page=v %}">{{ v }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="disabled"><a href="#">...</a></li>
+                    <li><a href="{% url url_name page=total_pages %}">{{ total_pages }}</a></li>
+                {% elif current_page >= total_pages|add:"-3" %}
+                    {# 当前页在后4页 #}
+                    <li><a href="{% url url_name page=1 %}">1</a></li>
+                    <li class="disabled"><a href="#">...</a></li>
+                    {% for v in page_data.paginator.page_range|slice:"-5:" %}
+                        {% if v == current_page %}
+                            <li class="active"><a href="#">{{ v }}</a></li>
+                        {% else %}
+                            <li><a href="{% url url_name page=v %}">{{ v }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    {# 当前页在中间 #}
+                    <li><a href="{% url url_name page=1 %}">1</a></li>
+                    <li class="disabled"><a href="#">...</a></li>
+                    {% for v in page_data.paginator.page_range %}
+                        {% if v >= current_page|add:"-2" and v <= current_page|add:"2" %}
+                            {% if v == current_page %}
+                                <li class="active"><a href="#">{{ v }}</a></li>
+                            {% else %}
+                                <li><a href="{% url url_name page=v %}">{{ v }}</a></li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <li class="disabled"><a href="#">...</a></li>
+                    <li><a href="{% url url_name page=total_pages %}">{{ total_pages }}</a></li>
+                {% endif %}
+            {% endif %}
+        {% endwith %}
+
+        {# 下一页 #}
+        {% if page_data.has_next %}
+            <li><a href="{% url url_name page=page_data.next_page_number %}">下一页</a></li>
+        {% else %}
+            <li class="disabled"><a href="#">下一页</a></li>
+        {% endif %}
+
+        {# 尾页 #}
+        <li><a href="{% url url_name page=page_data.paginator.num_pages %}">尾页</a></li>
+    </ul>
+{% endif %}

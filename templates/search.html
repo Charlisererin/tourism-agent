@@ -1,0 +1,34 @@
+{% extends 'home.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <ol class="breadcrumb" style="margin-top:6px;">
+                <li>景点名中包含"{{ key }}"的共有 {{ count }} 个</li>
+            </ol>
+        </div>
+        <div class="col-md-12">
+
+            {% for v in page_data %}
+                <div class="media">
+                    <div class="media-left">
+                        <a href="{% url 'play' id=v.id %}" target="_blank">
+                            <img class="media-object" src="{{ v.img_url }}"
+                                 style="width: 150px;height: 150px" alt="{{ v.title }}">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <br>
+                        <h4 class="media-heading">{{ v.title }}
+                            <a href="{% url 'play' id=v.id %}"
+                               target="_blank"
+                               class="label label-primary pull-right">
+                                <span class="glyphicon glyphicon-play"></span>查看</a></h4>
+                        {{ v.tag }}
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+{% endblock %}

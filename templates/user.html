@@ -1,0 +1,187 @@
+{% extends 'home.html' %}
+
+{% block css %}
+    <style>
+        .col-md-9 {
+            padding-right: 3px;
+            padding-left: 3px;
+        }
+
+        /* 添加一些基础样式 */
+        .panel-warning {
+            border-color: #faebcc;
+        }
+
+        .panel-heading {
+            color: #8a6d3b;
+            background-color: #fcf8e3;
+            border-color: #faebcc;
+            padding: 10px 15px;
+        }
+
+        .panel-title {
+            margin-top: 0;
+            margin-bottom: 0;
+            font-size: 16px;
+        }
+
+        .glyphicon {
+            margin-right: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+
+        .alert-danger {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+
+        .img-rounded {
+            border-radius: 6px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'menu.html' %}
+
+    <div class="col-md-9">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-map-marker"></span>&nbsp;个人中心
+                </h3>
+            </div>
+            <div class="panel-body">
+                {# 成功消息提示 #}
+                {% for msg in messages %}
+                    {% if msg.tags == 'success' %}
+                        <div class="alert alert-success alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <h4><i class="icon fa fa-check"></i> 操作成功!</h4>
+                            {{ msg }}
+                        </div>
+                    {% elif msg.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <h4><i class="icon fa fa-ban"></i> 操作失败!</h4>
+                            {{ msg }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                <form method="post" enctype="multipart/form-data" class="form-horizontal">
+                    {% csrf_token %}
+
+                    {# 用户名字段 #}
+                    <div class="form-group">
+                        <label for="id_name" class="control-label">
+                            <span class="glyphicon glyphicon-user"></span>&nbsp;用户名
+                        </label>
+                        <input type="text" class="form-control" id="id_name" name="username"
+                               value="{{ form.username.value|default_if_none:'' }}" maxlength="100">
+                        {% if form.username.errors %}
+                            <div class="text-danger">
+                                {{ form.username.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# 邮箱字段 #}
+                    <div class="form-group">
+                        <label for="id_email" class="control-label">
+                            <span class="glyphicon glyphicon-envelope"></span>&nbsp;邮箱
+                        </label>
+                        <input type="email" class="form-control" id="id_email" name="email"
+                               value="{{ form.email.value|default_if_none:'' }}">
+                        {% if form.email.errors %}
+                            <div class="text-danger">
+                                {{ form.email.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# 电话字段 #}
+                    <div class="form-group">
+                        <label for="id_phone" class="control-label">
+                            <span class="glyphicon glyphicon-phone"></span>&nbsp;电话
+                        </label>
+                        <input type="text" class="form-control" id="id_phone" name="phone"
+                               value="{{ form.phone.value|default_if_none:'' }}">
+                        {% if form.phone.errors %}
+                            <div class="text-danger">
+                                {{ form.phone.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# 头像字段 #}
+                    <div class="form-group">
+                        <label for="id_face" class="control-label">
+                            <span class="glyphicon glyphicon-picture"></span>&nbsp;头像
+                        </label>
+                        <input type="file" id="id_face" name="face">
+                        {% if user.face %}
+                            <img src="{{ user.face.url }}" style="width: 100px; margin-top: 6px;"
+                                 class="img-responsive img-rounded">
+                        {% endif %}
+                        {% if form.face.errors %}
+                            <div class="text-danger">
+                                {{ form.face.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# 个人简介字段 #}
+                    <div class="form-group">
+                        <label for="id_info" class="control-label">
+                            <span class="glyphicon glyphicon-edit"></span>&nbsp;个人简介
+                        </label>
+                        <textarea class="form-control" id="id_info" name="info"
+                                  rows="3">{{ form.info.value|default_if_none:'' }}</textarea>
+                        {% if form.info.errors %}
+                            <div class="text-danger">
+                                {{ form.info.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# 提交按钮 #}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-warning">保存修改</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            // 激活菜单项
+            $('#m-1').addClass('active');
+
+            // 自动关闭警告框
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 3000);
+        });
+    </script>
+{% endblock %}
