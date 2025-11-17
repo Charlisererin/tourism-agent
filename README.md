@@ -1,4 +1,4 @@
-# ai_tourism_recommend
+# 24年计设国三作品
 
 基于多模态AI+Django+MySQL的旅游景点推荐系统
 
